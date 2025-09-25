@@ -10,7 +10,6 @@ const navigationItems = [
   { name: "Cửa hàng", href: "/store" },
   { name: "Về chúng tôi", href: "/about" },
   { name: "Liên hệ", href: "/contact" },
-  { name: "Blog", href: "/blog" },
 ];
 
 export default function Header() {
