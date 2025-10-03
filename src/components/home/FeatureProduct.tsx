@@ -79,7 +79,7 @@ const featuredProducts = [
 ];
 const FeatureProduct: React.FC = () => {
   return (
-    <section className="py-16 bg-slate-50">
+    <section className="py-16 ">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-12">
           <div className="space-y-2">

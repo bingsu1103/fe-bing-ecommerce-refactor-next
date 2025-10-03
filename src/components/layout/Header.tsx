@@ -3,7 +3,20 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ShoppingCart, User, Menu, X, Zap } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  User,
+  Menu,
+  X,
+  Zap,
+  Moon,
+  Sun,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { useSession } from "next-auth/react";
+import Login from "../login";
+import Register from "../register";
 
 const navigationItems = [
   { name: "Trang chủ", href: "/" },
@@ -15,11 +28,13 @@ const navigationItems = [
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const { status } = useSession();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-16 items-center justify-between gap-5">
           {/* Logo */}
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -27,7 +42,6 @@ export default function Header() {
             </div>
             <span className="text-xl font-bold">TechStore</span>
           </div>
-
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navigationItems.map((item) => (
@@ -55,16 +69,46 @@ export default function Header() {
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="relative">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative cursor-pointer"
+            >
               <ShoppingCart className="w-5 h-5" />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                 3
               </span>
             </Button>
-            <Button variant="ghost" size="icon">
-              <User className="w-5 h-5" />
-            </Button>
+            {theme === "dark" ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="cursor-pointer"
+                onClick={() => setTheme("light")}
+              >
+                <Sun className="w-5 h-5" />
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="cursor-pointer"
+                onClick={() => setTheme("dark")}
+              >
+                <Moon className="w-5 h-5" />
+              </Button>
+            )}
+            {status === "unauthenticated" ? (
+              <div className="flex gap-2">
+                <Login></Login>
+                <Register></Register>
+              </div>
+            ) : (
+              <Button variant="ghost" size="icon" className="cursor-pointer">
+                <User className="w-5 h-5" />
+              </Button>
+            )}
 
             {/* Mobile Menu Button */}
             <Button
