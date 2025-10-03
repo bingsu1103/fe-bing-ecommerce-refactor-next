@@ -3,20 +3,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Search,
-  ShoppingCart,
-  User,
-  Menu,
-  X,
-  Zap,
-  Moon,
-  Sun,
-} from "lucide-react";
-import { useTheme } from "next-themes";
+import { Search, ShoppingCart, User, Menu, X, Zap } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Login from "../login";
 import Register from "../register";
+import ThemeToggle from "../ui/theme-toggle";
 
 const navigationItems = [
   { name: "Trang chủ", href: "/" },
@@ -28,7 +19,6 @@ const navigationItems = [
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
   const { status } = useSession();
 
   return (
@@ -80,25 +70,7 @@ export default function Header() {
                 3
               </span>
             </Button>
-            {theme === "dark" ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="cursor-pointer"
-                onClick={() => setTheme("light")}
-              >
-                <Sun className="w-5 h-5" />
-              </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="cursor-pointer"
-                onClick={() => setTheme("dark")}
-              >
-                <Moon className="w-5 h-5" />
-              </Button>
-            )}
+            <ThemeToggle />
             {status === "unauthenticated" ? (
               <div className="flex gap-2">
                 <Login></Login>

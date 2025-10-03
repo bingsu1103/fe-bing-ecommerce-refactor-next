@@ -1,7 +1,8 @@
 import axios from "axios";
+import { getSession, useSession } from "next-auth/react";
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL,
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
   withCredentials: true,
 });
 
@@ -15,8 +16,9 @@ const instance = axios.create({
 // };
 
 instance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("access_token");
+  async (config) => {
+    const session = await getSession();
+    const token = session?.access_token;
     if (token) {
       config.headers = config.headers || {};
       config.headers["Authorization"] = `Bearer ${token}`;

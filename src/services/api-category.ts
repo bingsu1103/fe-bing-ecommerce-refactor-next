@@ -10,7 +10,7 @@ export default class CategoryApi {
 
   async findAll(page?: number, limit?: number) {
     const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/categories?page=${page}&limit=${limit}`;
-    return await axios.get<IBackendRes<ICategory[]>>(backendUrl);
+    return await axios.get<IBackendRes<ICategoryWithPage>>(backendUrl);
   }
 
   async delete(id: string) {

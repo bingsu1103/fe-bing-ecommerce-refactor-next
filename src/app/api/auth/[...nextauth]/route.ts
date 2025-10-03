@@ -3,6 +3,25 @@ import { authApi } from "@/services/api-auth";
 import NextAuth, { User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
+async function refreshAccessToken(token: any) {
+  try {
+    const res = await authApi.refresh(token.refresh_token);
+
+    return {
+      ...token,
+      access_token: res.data.access_token,
+      expired_in: new Date(res.data.expired_in),
+      refresh_token: res.data.refresh_token,
+    };
+  } catch (error) {
+    console.error("Refresh token error:", error);
+    return {
+      ...token,
+      error: "RefreshAccessTokenError",
+    };
+  }
+}
+
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
@@ -19,10 +38,10 @@ const handler = NextAuth({
           );
 
           return {
-            ...res.data.user,
-            access_token: res.data.access_token,
-            refresh_token: res.data.refresh_token,
-            expired_in: res.data.expired_in,
+            ...res.data?.user,
+            access_token: res.data?.access_token,
+            refresh_token: res.data?.refresh_token,
+            expired_in: new Date(res.data?.expired_in ?? 0),
           };
         } catch (error) {
           console.error("Authorize error:", error);
@@ -45,14 +64,14 @@ const handler = NextAuth({
         token.full_name = user.full_name;
         token.access_token = user.access_token;
         token.refresh_token = user.refresh_token;
-        token.expired_in = user.expired_in;
+        token.expired_in = new Date(user.expired_in);
       }
 
-      if (Date.now() < token.expired_in) {
+      if (Date.now() < new Date(token.expired_in).getTime()) {
         return token;
       }
 
-      return await authApi.refresh(token.refresh_token);
+      return await refreshAccessToken(token);
     },
     async session({ session, token }) {
       session.user = {
@@ -65,7 +84,7 @@ const handler = NextAuth({
     },
     async redirect({ url, baseUrl }) {
       // bất kể callbackUrl là gì, mình ép sang dashboard 3001
-      return "http://localhost:3001/dashboard";
+      return "http://localhost:3000/dashboard";
     },
   },
 });

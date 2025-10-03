@@ -29,7 +29,7 @@ export default class ProductApi {
 
   async findAll(page?: number, limit?: number) {
     const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/products?page=${page}&limit=${limit}`;
-    return await axios.get<IBackendRes<IProduct[]>>(backendUrl);
+    return await axios.get<IBackendRes<IProductWithPage>>(backendUrl);
   }
 
   async delete(id: string) {
