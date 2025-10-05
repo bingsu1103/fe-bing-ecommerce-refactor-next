@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/pagination";
 import ProductCard from "./ProductCard";
 import ProductSkeleton from "./ProductSkeleton";
+import { useRouter } from "next/navigation";
 
 interface StoreProps {
   initialProducts: IProduct[];
@@ -115,9 +116,6 @@ const Store: React.FC<StoreProps> = ({ initialProducts, categories }) => {
 
   const totalPages = Math.ceil(total / limit);
 
-  // ==========================================
-  // 🔹 RENDER UI
-  // ==========================================
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-center">

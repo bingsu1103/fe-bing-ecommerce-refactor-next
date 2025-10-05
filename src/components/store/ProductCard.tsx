@@ -2,13 +2,18 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 const ProductCard: React.FC<{ product: IProduct }> = ({ product }) => {
   const price = product.variants?.[0]?.price ?? 0;
   const stock = product.variants?.[0]?.stock_quantity ?? 0;
+  const router = useRouter();
 
   return (
     <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
-      <Card className="shadow-md hover:shadow-lg transition rounded-2xl">
+      <Card
+        onClick={() => router.push(`store/${product.product_id}`)}
+        className="shadow-md hover:shadow-lg transition rounded-2xl cursor-pointer"
+      >
         <CardHeader>
           <CardTitle>{product.name}</CardTitle>
         </CardHeader>
