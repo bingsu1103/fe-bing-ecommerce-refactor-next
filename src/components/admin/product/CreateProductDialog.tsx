@@ -22,7 +22,12 @@ import { Plus, Save } from "lucide-react";
 import { toast } from "sonner";
 
 interface CreateProductDialogProps {
-  onCreate: (data: IProduct) => void;
+  onCreate: (
+    name: string,
+    brand: string,
+    description: string,
+    category_id: string
+  ) => void;
   categories: ICategory[];
 }
 
@@ -52,21 +57,9 @@ const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
       return;
     }
 
-    const newProduct: IProduct = {
-      product_id: `p-${Date.now()}`,
-      name: form.name,
-      brand: form.brand,
-      description: form.description,
-      category: selectedCategory,
-      variants: [],
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
-
-    onCreate(newProduct);
+    onCreate(form.name, form.brand, form.description, form.categoryId);
     setOpen(false);
     setForm({ name: "", brand: "", description: "", categoryId: "" });
-    toast.success("Thêm sản phẩm mới thành công!");
   };
 
   return (

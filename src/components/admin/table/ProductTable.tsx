@@ -39,6 +39,7 @@ import CreateProductDialog from "../product/CreateProductDialog";
 import { productApi } from "@/services/api-product";
 import UpdateProductDialog from "../product/UpdateProductDialog";
 import { categoryApi } from "@/services/api-category";
+import { Badge } from "@/components/ui/badge";
 
 const ProductTable = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
@@ -81,8 +82,14 @@ const ProductTable = () => {
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
   // ===== HANDLERS =====
-  const handleCreate = (data: IProduct) => {
-    setProducts((prev) => [data, ...prev]);
+  const handleCreate = async (
+    name: string,
+    brand: string,
+    description: string,
+    category_id: string
+  ) => {
+    const res = await productApi.create(name, brand, description, category_id);
+    setProducts((prev) => [res.data as IProduct, ...prev]);
     toast.success("Thêm sản phẩm thành công!");
   };
 
@@ -115,6 +122,7 @@ const ProductTable = () => {
             <TableHead>Thương hiệu</TableHead>
             <TableHead>Danh mục</TableHead>
             <TableHead>Mô tả</TableHead>
+            <TableHead>Variant</TableHead>
             <TableHead className="text-right">Hành động</TableHead>
           </TableRow>
         </TableHeader>
@@ -139,6 +147,13 @@ const ProductTable = () => {
                 <TableCell>{p.category?.name}</TableCell>
                 <TableCell className="truncate max-w-[200px]">
                   {p.description}
+                </TableCell>
+                <TableCell className="truncate max-w-[200px]">
+                  {p.variants?.length === 0 ? (
+                    <Badge variant={"destructive"}>Mising variant</Badge>
+                  ) : (
+                    <Badge style={{ backgroundColor: "green" }}>Valid</Badge>
+                  )}
                 </TableCell>
                 <TableCell className="text-right flex justify-end gap-2">
                   {/* EDIT */}

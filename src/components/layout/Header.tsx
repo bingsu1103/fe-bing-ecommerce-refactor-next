@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import { useDebounce } from "@/hooks/useDebouce";
+import { productApi } from "@/services/api-product";
 
 const navigationItems = [
   { name: "Trang chủ", href: "/" },
@@ -39,7 +41,16 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { status, data: session } = useSession();
-  console.log(session);
+  const [products, setProducts] = useState<IProduct[]>([]);
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await productApi.findAll({ search: debouncedSearch });
+      setProducts(res.data?.product as IProduct[]);
+    };
+    fetchData();
+  }, [debouncedSearch]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -76,6 +87,36 @@ export default function Header() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
+
+              {/* 🔽 Search Result List */}
+              {debouncedSearch && products.length > 0 && (
+                <div className="absolute mt-2 w-full bg-background border rounded-md shadow-lg z-50 max-h-80 overflow-y-auto">
+                  {products.map((product) => (
+                    <Link
+                      onClick={() => setSearchQuery("")}
+                      key={product.product_id}
+                      href={`/store/${product.product_id}`}
+                      className="flex items-center gap-3 px-3 py-2 hover:bg-muted transition-colors"
+                    >
+                      {/* <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-10 h-10 object-cover rounded"
+                      /> */}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{product.name}</p>
+                        {product &&
+                          product.variants &&
+                          product.variants?.length > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              {product.variants[0].price.toLocaleString()}₫
+                            </p>
+                          )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

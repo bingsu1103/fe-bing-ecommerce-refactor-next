@@ -5,7 +5,7 @@ export default class VariantApi {
     product_id: string,
     layout: string,
     color: string,
-    price: string,
+    price: number,
     stock_quantity: number
   ) {
     const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/variants`;
