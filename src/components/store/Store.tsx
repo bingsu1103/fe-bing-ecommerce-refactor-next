@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/pagination";
 import ProductCard from "./ProductCard";
 import ProductSkeleton from "./ProductSkeleton";
-import { useRouter } from "next/navigation";
 
 interface StoreProps {
   initialProducts: IProduct[];
@@ -43,7 +42,7 @@ const Store: React.FC<StoreProps> = ({ initialProducts, categories }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const limit = 10;
-  const debouncedSearch = useDebounce(search, 500);
+  const debouncedSearch = useDebounce(search, 300);
 
   useEffect(() => {
     const fetchFiltered = async () => {
