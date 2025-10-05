@@ -33,6 +33,7 @@ declare global {
     access_token: string;
     refresh_token: string;
     expired_in: string;
+    role: string;
   }
 
   interface IRegister {

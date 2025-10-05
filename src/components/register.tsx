@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,9 +11,19 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authApi } from "@/services/api-auth";
 
 const Register: React.FC = () => {
   const id = useId();
+  const [fullname, setFullname] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await authApi.register(username, password, fullname, email);
+  };
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -48,14 +58,27 @@ const Register: React.FC = () => {
           </DialogHeader>
         </div>
 
-        <form className="space-y-5">
+        <form className="space-y-5" onSubmit={handleRegister}>
           <div className="space-y-4">
+            <div className="*:not-first:mt-2">
+              <Label htmlFor={`${id}-name`}>User name</Label>
+              <Input
+                id={`${id}-username`}
+                placeholder="abc"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
             <div className="*:not-first:mt-2">
               <Label htmlFor={`${id}-name`}>Full name</Label>
               <Input
-                id={`${id}-name`}
+                id={`${id}-full_name`}
                 placeholder="Matt Welsh"
                 type="text"
+                value={fullname}
+                onChange={(e) => setFullname(e.target.value)}
                 required
               />
             </div>
@@ -65,6 +88,8 @@ const Register: React.FC = () => {
                 id={`${id}-email`}
                 placeholder="hi@yourcompany.com"
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -74,11 +99,13 @@ const Register: React.FC = () => {
                 id={`${id}-password`}
                 placeholder="Enter your password"
                 type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
           </div>
-          <Button type="button" className="w-full">
+          <Button type="submit" className="w-full">
             Sign up
           </Button>
         </form>

@@ -17,45 +17,97 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Pencil, Trash, Plus } from "lucide-react";
+import { Pencil, Trash } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import CreateProductDialog from "../product/CreateProductDialog";
+import { productApi } from "@/services/api-product";
+import UpdateProductDialog from "../product/UpdateProductDialog";
+import { categoryApi } from "@/services/api-category";
 
 const ProductTable = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [page, setPage] = useState(1);
   const limit = 10;
   const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<ICategory[]>([]);
 
+  // ===== FETCH PRODUCTS =====
   useEffect(() => {
-    const mock: IProduct[] = Array.from({ length: 10 }, (_, i) => ({
-      product_id: `p-${i + 1}`,
-      name: `Product ${i + 1}`,
-      description: "Mô tả sản phẩm demo",
-      brand: "BrandX",
-      category: {
-        category_id: "c1",
-        name: "Laptop",
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-      variants: [],
-      created_at: new Date(),
-      updated_at: new Date(),
-    }));
-    setProducts(mock);
-    setTotal(50);
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await productApi.findAll({ page, limit });
+        if (res.data?.product) {
+          setProducts(res.data.product);
+          setTotal(res.data.total || 0);
+        } else {
+          setProducts([]);
+          setTotal(0);
+        }
+      } catch {
+        toast.error("Không thể tải danh sách sản phẩm!");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
   }, [page]);
 
-  const totalPages = Math.ceil(total / limit);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const categoriesRes = await categoryApi.findAll(1, 100);
+      setCategories(categoriesRes.data?.categories || []);
+    };
+    fetchCategories();
+  }, []);
 
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  // ===== HANDLERS =====
+  const handleCreate = (data: IProduct) => {
+    setProducts((prev) => [data, ...prev]);
+    toast.success("Thêm sản phẩm thành công!");
+  };
+
+  const handleUpdate = (id: string, updated: Partial<IProduct>) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.product_id === id ? { ...p, ...updated } : p))
+    );
+    toast.success("Cập nhật sản phẩm thành công!");
+  };
+
+  const handleDelete = (id: string) => {
+    setProducts((prev) => prev.filter((p) => p.product_id !== id));
+    toast.success("Xoá sản phẩm thành công!");
+  };
+
+  // ===== RENDER =====
   return (
     <div className="rounded-md border bg-background shadow-sm p-4">
+      {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Quản lý sản phẩm</h2>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Thêm sản phẩm
-        </Button>
+        <CreateProductDialog onCreate={handleCreate} categories={categories} />
       </div>
 
+      {/* Table */}
       <Table>
         <TableHeader>
           <TableRow>
@@ -67,52 +119,105 @@ const ProductTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products.map((p) => (
-            <TableRow key={p.product_id}>
-              <TableCell>{p.name}</TableCell>
-              <TableCell>{p.brand}</TableCell>
-              <TableCell>{p.category?.name}</TableCell>
-              <TableCell className="truncate max-w-[200px]">
-                {p.description}
-              </TableCell>
-              <TableCell className="text-right space-x-2">
-                <Button variant="outline" size="sm">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="destructive" size="sm">
-                  <Trash className="h-4 w-4" />
-                </Button>
+          {loading ? (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-6">
+                Đang tải dữ liệu...
               </TableCell>
             </TableRow>
-          ))}
+          ) : products.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-6">
+                Không có sản phẩm nào
+              </TableCell>
+            </TableRow>
+          ) : (
+            products.map((p) => (
+              <TableRow key={p.product_id}>
+                <TableCell>{p.name}</TableCell>
+                <TableCell>{p.brand}</TableCell>
+                <TableCell>{p.category?.name}</TableCell>
+                <TableCell className="truncate max-w-[200px]">
+                  {p.description}
+                </TableCell>
+                <TableCell className="text-right flex justify-end gap-2">
+                  {/* EDIT */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <UpdateProductDialog product={p} onUpdate={handleUpdate}>
+                        <Button variant="outline" size="sm">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </UpdateProductDialog>
+                    </TooltipTrigger>
+                    <TooltipContent>Sửa sản phẩm</TooltipContent>
+                  </Tooltip>
+
+                  {/* DELETE */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="sm">
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Xác nhận xoá?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Bạn có chắc muốn xoá <strong>{p.name}</strong>{" "}
+                              không? Hành động này không thể hoàn tác.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Huỷ</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(p.product_id)}
+                            >
+                              Xoá
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TooltipTrigger>
+                    <TooltipContent>Xoá sản phẩm</TooltipContent>
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
 
-      <div className="flex justify-center py-4">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className={page === 1 ? "opacity-50 pointer-events-none" : ""}
-              />
-            </PaginationItem>
-            <PaginationItem>
-              <span className="px-4 py-2 text-sm text-muted-foreground">
-                Trang {page}/{totalPages}
-              </span>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className={
-                  page === totalPages ? "opacity-50 pointer-events-none" : ""
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+      {/* Pagination */}
+      {total > 0 && (
+        <div className="flex justify-center py-4">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className={page === 1 ? "opacity-50 pointer-events-none" : ""}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <span className="px-4 py-2 text-sm text-muted-foreground">
+                  Trang {page}/{totalPages}
+                </span>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  className={
+                    page === totalPages ? "opacity-50 pointer-events-none" : ""
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 };

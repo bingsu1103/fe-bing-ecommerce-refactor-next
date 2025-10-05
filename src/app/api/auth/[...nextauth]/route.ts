@@ -42,6 +42,7 @@ const handler = NextAuth({
             access_token: res.data?.access_token,
             refresh_token: res.data?.refresh_token,
             expired_in: new Date(res.data?.expired_in ?? 0),
+            role: res.data.role,
           };
         } catch (error) {
           console.error("Authorize error:", error);
@@ -65,6 +66,7 @@ const handler = NextAuth({
         token.access_token = user.access_token;
         token.refresh_token = user.refresh_token;
         token.expired_in = new Date(user.expired_in);
+        token.role = user.role;
       }
 
       if (Date.now() < new Date(token.expired_in).getTime()) {
@@ -80,6 +82,7 @@ const handler = NextAuth({
       };
       session.access_token = String(token.access_token);
       session.refresh_token = String(token.refresh_token);
+      session.role = String(token.role);
       return session;
     },
     async redirect({ url, baseUrl }) {

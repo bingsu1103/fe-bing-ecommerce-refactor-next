@@ -24,7 +24,7 @@ type UpdatePayload = Partial<
 interface UpdateUserDialogProps {
   user: IUser;
   onUpdate: (id: string, data: UpdatePayload) => Promise<void> | void;
-  children?: React.ReactNode; // optional custom trigger (e.g., Pencil button)
+  children?: React.ReactNode;
 }
 
 const UpdateUserDialog: React.FC<UpdateUserDialogProps> = ({
