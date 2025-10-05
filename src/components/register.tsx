@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authApi } from "@/services/api-auth";
+import { toast } from "sonner";
 
 const Register: React.FC = () => {
   const id = useId();
@@ -19,13 +20,18 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [username, setUsername] = useState<string>("");
+  const [open, setOpen] = useState<boolean>(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    await authApi.register(username, password, fullname, email);
+    const res = await authApi.register(username, password, fullname, email);
+    if (res.success === true) {
+      setOpen(false);
+      toast.success("Đăng kí thành công");
+    }
   };
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="cursor-pointer" variant="outline">
           Sign up

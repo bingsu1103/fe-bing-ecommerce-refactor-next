@@ -54,11 +54,10 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
         phone: form.phone ? form.phone.trim() : null,
         address: form.address ? form.address.trim() : null,
       });
-      toast.success("Thêm người dùng thành công!");
       setOpen(false);
       setForm({ full_name: "", email: "", phone: "", address: "" });
     } catch (e) {
-      toast.error("Không thể thêm người dùng");
+      console.log(e);
     } finally {
       setLoading(false);
     }

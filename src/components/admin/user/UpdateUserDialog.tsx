@@ -66,10 +66,9 @@ const UpdateUserDialog: React.FC<UpdateUserDialogProps> = ({
         phone: form.phone ? form.phone.trim() : null,
         address: form.address ? form.address.trim() : null,
       });
-      toast.success("Cập nhật người dùng thành công!");
+
       setOpen(false);
     } catch (e) {
-      toast.error("Không thể cập nhật người dùng");
     } finally {
       setLoading(false);
     }

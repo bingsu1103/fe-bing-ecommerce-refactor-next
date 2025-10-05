@@ -60,6 +60,7 @@ const UserTable = () => {
           setTotal(0);
         }
       } catch (err) {
+        console.log(err);
         toast.error("Không thể tải danh sách người dùng!");
       } finally {
         setLoading(false);
