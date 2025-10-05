@@ -24,7 +24,7 @@ type CreatePayload = Omit<
 
 interface CreateUserDialogProps {
   onCreate: (data: CreatePayload) => Promise<void> | void;
-  children?: React.ReactNode; // optional custom trigger
+  children?: React.ReactNode;
 }
 
 const CreateUserDialog: React.FC<CreateUserDialogProps> = ({

@@ -1,6 +1,12 @@
 // lib/authApi.ts
 import axios from "@/configs/axios.config";
 export default class UserApi {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async create(data: any) {
+    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/users`;
+    return axios.post(backendUrl, data);
+  }
+
   async findOne(id: string) {
     const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${id}`;
     return await axios.get<IBackendRes<IUser>>(backendUrl);
