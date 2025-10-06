@@ -37,7 +37,7 @@ const navigationItems = [
   { name: "Liên hệ", href: "/contact" },
 ];
 
-export default function Header() {
+const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { status, data: session } = useSession();
@@ -91,7 +91,7 @@ export default function Header() {
               {/* 🔽 Search Result List */}
               {debouncedSearch && products.length > 0 && (
                 <div className="absolute mt-2 w-full bg-background border rounded-md shadow-lg z-50 max-h-80 overflow-y-auto">
-                  {products.map((product) => (
+                  {products.slice(0, 6).map((product) => (
                     <Link
                       onClick={() => setSearchQuery("")}
                       key={product.product_id}
@@ -233,4 +233,5 @@ export default function Header() {
       </div>
     </header>
   );
-}
+};
+export default Header;

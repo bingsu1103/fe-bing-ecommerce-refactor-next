@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-// 🔹 Enum map từ tên màu (dạng string trong DB) sang mã hex thật
 const COLOR_MAP: Record<string, string> = {
   black: "#000000",
   white: "#FFFFFF",

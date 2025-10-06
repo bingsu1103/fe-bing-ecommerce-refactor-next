@@ -55,7 +55,7 @@ const socialLinks = [
   { name: "Youtube", icon: Youtube, href: "#" },
 ];
 
-export default function Footer() {
+const Footer: React.FC = () => {
   return (
     <footer className="border-t">
       {/* Newsletter Section */}
@@ -183,4 +183,5 @@ export default function Footer() {
       </div>
     </footer>
   );
-}
+};
+export default Footer;

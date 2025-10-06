@@ -29,9 +29,6 @@ interface StoreProps {
   categories: ICategory[];
 }
 
-// ==============================
-// STORE CLIENT
-// ==============================
 const Store: React.FC<StoreProps> = ({ initialProducts, categories }) => {
   const [products, setProducts] = useState<IProduct[]>(initialProducts);
   const [total, setTotal] = useState<number>(0);
@@ -77,9 +74,6 @@ const Store: React.FC<StoreProps> = ({ initialProducts, categories }) => {
     fetchFiltered();
   }, [page, selectedCategory, sortOption, debouncedSearch, priceRange]);
 
-  // ==========================================
-  // 🔹 LỌC LOCAL NẾU KHÔNG CÓ API THẬT
-  // ==========================================
   const filteredProducts = useMemo(() => {
     if (initialProducts.length && !products.length) {
       return initialProducts
@@ -133,7 +127,7 @@ const Store: React.FC<StoreProps> = ({ initialProducts, categories }) => {
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
-                setPage(1); // reset page khi search
+                setPage(1);
               }}
             />
           </div>
