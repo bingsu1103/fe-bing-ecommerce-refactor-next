@@ -71,7 +71,6 @@ const UserTable = () => {
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
-  // ===== HANDLERS =====
   const handleCreateUser = async (
     data: Omit<IUser, "user_id" | "created_at" | "updated_at" | "deletedAt">
   ) => {

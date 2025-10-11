@@ -29,7 +29,7 @@ const ProductCard: React.FC<{ product: IProduct }> = ({ product }) => {
             </span>
           </div>
           <p className="text-xs text-muted-foreground mb-4">Tồn kho: {stock}</p>
-          <Button className="w-full">Thêm vào giỏ</Button>
+          <Button className="w-full cursor-pointer">Thêm vào giỏ</Button>
         </CardContent>
       </Card>
     </motion.div>

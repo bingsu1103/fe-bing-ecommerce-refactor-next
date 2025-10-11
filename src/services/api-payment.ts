@@ -11,6 +11,11 @@ export default class PaymentApi {
     const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/payments/${id}`;
     return await axios.get<IBackendRes<IPayment>>(backendUrl);
   }
+
+  async findAll(page?: number, limit?: number) {
+    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/payments?page=${page}&limit=${limit}`;
+    return await axios.get<IBackendRes<IPaymentWithPage>>(backendUrl);
+  }
 }
 
 export const paymentApi = new PaymentApi();

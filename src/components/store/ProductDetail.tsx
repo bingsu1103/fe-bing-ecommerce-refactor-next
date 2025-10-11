@@ -13,6 +13,8 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { Input } from "../ui/input";
 
 const COLOR_MAP: Record<string, string> = {
   black: "#000000",
@@ -38,6 +40,7 @@ interface ProductDetailProps {
 const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const variants = product.variants ?? [];
+  const { status, data: session } = useSession();
 
   const colors = useMemo(
     () => Array.from(new Set(variants.map((v) => v.color))).filter(Boolean),
@@ -49,11 +52,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
     [variants]
   );
 
-  // 🔹 State lựa chọn
   const [selectedColor, setSelectedColor] = useState<string>(colors[0] || "");
   const [selectedLayout, setSelectedLayout] = useState<string>(
     layouts[0] || ""
   );
+  const [selectedQuantity, setSelectedQuantity] = useState<number>(0);
 
   const selectedVariant = useMemo(
     () =>
@@ -66,6 +69,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
   const price = Number(selectedVariant?.price ?? 0);
   const stock = selectedVariant?.stock_quantity ?? 0;
 
+  const handleAddToCart = async (
+    cart_id: string,
+    user_id: string,
+    variant_id: string,
+    quantity: string
+  ) => {};
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -74,7 +84,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
       className="container mx-auto px-6 py-10"
     >
       <div className="grid md:grid-cols-2 gap-10">
-        {/* ========== IMAGE ========== */}
         <div className="flex justify-center items-center">
           {/* <img
             src={
@@ -87,7 +96,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
           /> */}
         </div>
 
-        {/* ========== INFO ========== */}
         <div>
           <div className="flex items-center gap-5 flex-wrap">
             <h1 className="text-3xl font-bold mb-3">{product.name}</h1>
@@ -107,8 +115,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
           </p>
 
           <Separator className="my-4" />
+          <div className="mb-5">
+            <h3 className="text-sm font-medium mb-2">Số lượng:</h3>
+            <Input className="w-20"></Input>
+          </div>
+          <Separator className="my-4" />
 
-          {/* ========== CHỌN MÀU SẮC ========== */}
           {colors.length > 0 && (
             <div className="mb-5">
               <h3 className="text-sm font-medium mb-3">Màu sắc:</h3>
@@ -140,7 +152,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
             </div>
           )}
 
-          {/* ========== CHỌN LAYOUT ========== */}
           {layouts.length > 0 && (
             <div className="mb-5">
               <h3 className="text-sm font-medium mb-2">Layout:</h3>
@@ -164,7 +175,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
 
           <Separator className="my-4" />
 
-          {/* ========== GIÁ & HÀNH ĐỘNG ========== */}
           <div className="flex items-center justify-between mb-4">
             <span className="text-2xl font-semibold text-primary">
               {price.toLocaleString("vi-VN")}₫
@@ -175,17 +185,23 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
             <Button
               variant={"outline"}
               size="lg"
-              className="mb-4"
+              className="mb-4 cursor-pointer"
               disabled={stock <= 0}
               onClick={() =>
-                console.log("Thêm vào giỏ:", selectedVariant?.variant_id)
+                // console.log("Thêm vào giỏ:", selectedVariant?.variant_id)
+                handleAddToCart(
+                  cart_id,
+                  session?.user.user_id || "",
+                  selectedVariant.variant_id,
+                  selectedQuantity
+                )
               }
             >
               Thêm vào giỏ hàng
             </Button>
             <Button
               size="lg"
-              className="mb-4"
+              className="mb-4 cursor-pointer"
               disabled={stock <= 0}
               onClick={() =>
                 console.log("Mua ngay:", selectedVariant?.variant_id)

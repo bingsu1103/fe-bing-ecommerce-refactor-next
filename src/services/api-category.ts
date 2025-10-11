@@ -15,7 +15,7 @@ export default class CategoryApi {
 
   async delete(id: string) {
     const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/categories/${id}`;
-    return axios.delete(backendUrl);
+    return axios.delete<IBackendRes<null>>(backendUrl);
   }
 }
 

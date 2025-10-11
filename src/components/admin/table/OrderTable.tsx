@@ -16,6 +16,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { orderApi } from "@/services/api-order";
 
 const OrderTable = () => {
   const [orders, setOrders] = useState<IOrder[]>([]);
@@ -24,15 +25,14 @@ const OrderTable = () => {
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    const mock: IOrder[] = Array.from({ length: 10 }, (_, i) => ({
-      order_id: `order-${i + 1}`,
-      order_status: i % 2 ? "Delivered" : "Pending",
-      total_price: 2000000 + i * 50000,
-      created_at: new Date(),
-      updated_at: new Date(),
-    }));
-    setOrders(mock);
+    const fetchOrders = async () => {
+      const res = await orderApi.findAll(page, limit);
+      if (res && res.data) {
+        setOrders(res.data.orders);
+      }
+    };
     setTotal(40);
+    fetchOrders();
   }, [page]);
 
   const totalPages = Math.ceil(total / limit);

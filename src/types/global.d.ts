@@ -191,4 +191,9 @@ declare global {
     orders: IOrder[];
     total: number;
   }
+
+  interface IPaymentWithPage {
+    payments: IPayment[];
+    total: number;
+  }
 }
