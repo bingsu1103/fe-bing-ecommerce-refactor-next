@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/pagination";
 import ProductCard from "./ProductCard";
 import ProductSkeleton from "./ProductSkeleton";
-import { useSession } from "next-auth/react";
 
 interface StoreProps {
   initialProducts: IProduct[];
@@ -41,7 +40,6 @@ const Store: React.FC<StoreProps> = ({ initialProducts, categories }) => {
   const [page, setPage] = useState<number>(1);
   const limit = 10;
   const debouncedSearch = useDebounce(search, 300);
-  const { data: session } = useSession();
 
   useEffect(() => {
     const fetchFiltered = async () => {

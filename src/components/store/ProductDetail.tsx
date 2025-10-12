@@ -212,7 +212,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
               disabled={stock <= 0 || loading}
               onClick={() =>
                 handleAddToCart(
-                  session?.cart || "",
+                  session?.cart_id || "",
                   session?.user.user_id || "",
                   selectedVariant.variant_id,
                   selectedQuantity

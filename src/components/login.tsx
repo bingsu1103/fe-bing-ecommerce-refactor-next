@@ -26,7 +26,6 @@ const Login: React.FC = () => {
       username,
       password,
     });
-    console.log(res);
   };
 
   return (

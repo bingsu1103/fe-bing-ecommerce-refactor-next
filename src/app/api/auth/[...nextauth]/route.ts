@@ -2,6 +2,7 @@
 import NextAuth, { NextAuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { authApi } from "@/services/api-auth";
+import { cartApi } from "@/services/api-cart";
 
 // Hàm refresh token
 async function refreshAccessToken(token: any) {
@@ -38,6 +39,7 @@ export const authOptions: NextAuthOptions = {
             credentials!.username,
             credentials!.password
           );
+          const cartRes = await cartApi.findOne(String(res.data?.user.user_id));
 
           return {
             ...res.data?.user,
@@ -45,6 +47,7 @@ export const authOptions: NextAuthOptions = {
             refresh_token: res.data?.refresh_token,
             expired_in: new Date(res.data?.expired_in ?? 0),
             role: res.data?.role,
+            cart_id: cartRes.data?.cart_id,
           };
         } catch (error) {
           console.error("Authorize error:", error);
@@ -65,6 +68,7 @@ export const authOptions: NextAuthOptions = {
         token.refresh_token = user.refresh_token;
         token.expired_in = new Date(user.expired_in);
         token.role = user.role;
+        token.cart_id = user.cart_id;
       }
 
       if (Date.now() < new Date(token.expired_in).getTime()) {
@@ -82,6 +86,7 @@ export const authOptions: NextAuthOptions = {
       };
       session.access_token = String(token.access_token);
       session.refresh_token = String(token.refresh_token);
+      session.cart_id = String(token.cart_id);
       return session;
     },
 

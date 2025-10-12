@@ -161,7 +161,7 @@ const Header: React.FC = () => {
                 <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuLabel>Tài khoản</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {session?.role === "admin" && (
+                  {session?.user?.role === "admin" && (
                     <DropdownMenuItem>
                       <Link className="flex items-center gap-2" href="/admin">
                         <LayoutDashboard />
@@ -181,8 +181,6 @@ const Header: React.FC = () => {
                       const res = await authApi.logout(
                         String(session?.access_token)
                       );
-                      console.log(res);
-
                       signOut({ callbackUrl: "/" });
                     }}
                   >

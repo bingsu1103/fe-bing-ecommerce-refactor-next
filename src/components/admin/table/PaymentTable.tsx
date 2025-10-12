@@ -54,7 +54,6 @@ const PaymentTable = () => {
       const res = await paymentApi.findAll(page, limit);
       if (res && res.data) {
         setPayments(res.data.payments);
-        console.log(res.data.payments);
       }
     };
     setTotal(60);
