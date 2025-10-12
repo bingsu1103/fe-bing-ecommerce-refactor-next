@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/context/theme-provider";
 import AuthProviders from "@/context/session-provider";
 import { Toaster } from "@/components/ui/sonner";
+import FetchCart from "@/components/fetchCart";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -41,6 +42,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <Header />
+            <FetchCart />
             {children}
             <Toaster position="top-right" richColors closeButton />
             <Footer />

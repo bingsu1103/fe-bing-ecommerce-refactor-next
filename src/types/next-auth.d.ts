@@ -5,11 +5,12 @@ declare module "next-auth" {
     user: {
       user_id: string;
       full_name: string;
+      role: string;
     };
     access_token: string;
     refresh_token: string;
     expired_in: Date;
-    role: string;
+    cart_id: string;
   }
 
   interface User {
@@ -19,5 +20,6 @@ declare module "next-auth" {
     refresh_token: string;
     expired_in: Date;
     role: string;
+    cart_id: string;
   }
 }

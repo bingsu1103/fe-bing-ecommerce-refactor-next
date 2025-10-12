@@ -28,20 +28,26 @@ export default class AuthApi {
 
   async refresh(refresh_token: string) {
     const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh`;
-
     return await axios.post(backendUrl, { refresh_token });
   }
 
-  async fetchAccount() {
+  async fetchAccount(access_token: string) {
     const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/fetch`;
 
-    return await axios.get<IBackendRes<IFetch>>(backendUrl);
+    return await axios.get<IBackendRes<IFetch>>(backendUrl, {
+      headers: { Authorization: `Bearer ${access_token}` },
+    });
   }
 
-  async logout() {
+  async logout(access_token: string) {
     const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`;
-
-    return await axios.post(backendUrl);
+    return await axios.post(
+      backendUrl,
+      {},
+      {
+        headers: { Authorization: `Bearer ${access_token}` },
+      }
+    );
   }
 
   async forgot(email: string) {

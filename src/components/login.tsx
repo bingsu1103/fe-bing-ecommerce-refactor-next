@@ -21,11 +21,12 @@ const Login: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signIn("credentials", {
+    const res = await signIn("credentials", {
       redirect: false,
       username,
       password,
     });
+    console.log(res);
   };
 
   return (

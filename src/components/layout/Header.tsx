@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useDebounce } from "@/hooks/useDebouce";
 import { productApi } from "@/services/api-product";
+import { useCartStore } from "@/store/useCartStore";
+import { authApi } from "@/services/api-auth";
 
 const navigationItems = [
   { name: "Trang chủ", href: "/" },
@@ -43,6 +45,7 @@ const Header: React.FC = () => {
   const { status, data: session } = useSession();
   const [products, setProducts] = useState<IProduct[]>([]);
   const debouncedSearch = useDebounce(searchQuery, 300);
+  const { cart } = useCartStore();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,7 +64,7 @@ const Header: React.FC = () => {
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Zap className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">TechStore</span>
+            <span className="text-xl font-bold"></span>
           </div>
 
           {/* Desktop Navigation */}
@@ -131,7 +134,7 @@ const Header: React.FC = () => {
               <Link href="/cart" aria-label="Giỏ hàng">
                 <ShoppingCart className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  3
+                  {cart ? <>{cart.items.length}</> : <>{0}</>}
                 </span>
               </Link>
             </Button>
@@ -174,7 +177,14 @@ const Header: React.FC = () => {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => signOut({ callbackUrl: "/" })}
+                    onClick={async () => {
+                      const res = await authApi.logout(
+                        String(session?.access_token)
+                      );
+                      console.log(res);
+
+                      signOut({ callbackUrl: "/" });
+                    }}
                   >
                     <LogOut />
                     Đăng xuất

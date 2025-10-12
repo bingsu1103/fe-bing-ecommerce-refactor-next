@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +14,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { Input } from "../ui/input";
+import { cartApi } from "@/services/api-cart";
+import { useCartStore } from "@/store/useCartStore";
+import { Spinner } from "../ui/spinner";
 
 const COLOR_MAP: Record<string, string> = {
   black: "#000000",
@@ -38,9 +40,10 @@ interface ProductDetailProps {
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const variants = product.variants ?? [];
-  const { status, data: session } = useSession();
+  const { data: session } = useSession();
+  const { fetchCart } = useCartStore();
+  const [loading, setLoading] = useState(false);
 
   const colors = useMemo(
     () => Array.from(new Set(variants.map((v) => v.color))).filter(Boolean),
@@ -56,7 +59,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
   const [selectedLayout, setSelectedLayout] = useState<string>(
     layouts[0] || ""
   );
-  const [selectedQuantity, setSelectedQuantity] = useState<number>(0);
+  const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
 
   const selectedVariant = useMemo(
     () =>
@@ -73,8 +76,22 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
     cart_id: string,
     user_id: string,
     variant_id: string,
-    quantity: string
-  ) => {};
+    quantity: number
+  ) => {
+    setLoading(true);
+    const res = await cartApi.addToCart(cart_id, user_id, variant_id, quantity);
+    if (res && res.data) {
+      fetchCart(user_id);
+    }
+    setLoading(false);
+  };
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    if (value > 0 && value <= stock) {
+      setSelectedQuantity(value);
+    }
+  };
 
   return (
     <motion.div
@@ -87,7 +104,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
         <div className="flex justify-center items-center">
           {/* <img
             src={
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (selectedVariant as any)?.image_url ||
               "https://placehold.co/500x400?text=No+Image"
             }
@@ -117,7 +133,14 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
           <Separator className="my-4" />
           <div className="mb-5">
             <h3 className="text-sm font-medium mb-2">Số lượng:</h3>
-            <Input className="w-20"></Input>
+            <Input
+              type="number"
+              className="w-20"
+              value={selectedQuantity}
+              onChange={handleQuantityChange} // Handle change of quantity
+              min={1} // Ensure that quantity cannot go below 1
+              max={stock} // Ensure that quantity cannot exceed stock
+            />
           </div>
           <Separator className="my-4" />
 
@@ -186,17 +209,17 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
               variant={"outline"}
               size="lg"
               className="mb-4 cursor-pointer"
-              disabled={stock <= 0}
+              disabled={stock <= 0 || loading}
               onClick={() =>
-                // console.log("Thêm vào giỏ:", selectedVariant?.variant_id)
                 handleAddToCart(
-                  cart_id,
+                  session?.cart || "",
                   session?.user.user_id || "",
                   selectedVariant.variant_id,
                   selectedQuantity
                 )
               }
             >
+              {loading && <Spinner />}
               Thêm vào giỏ hàng
             </Button>
             <Button
