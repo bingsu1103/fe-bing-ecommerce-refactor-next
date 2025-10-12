@@ -3,7 +3,8 @@ import axios from "@/configs/axios.config";
 export default class OrderApi {
   async create(
     user_id: string,
-    order_item: ICartItem[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    order_item: any,
     payment_method: string,
     address: string,
     city: string,
