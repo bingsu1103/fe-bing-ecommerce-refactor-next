@@ -40,6 +40,7 @@ import { productApi } from "@/services/api-product";
 import UpdateProductDialog from "../product/UpdateProductDialog";
 import { categoryApi } from "@/services/api-category";
 import { Badge } from "@/components/ui/badge";
+import { variantApi } from "@/services/api-variant";
 
 const ProductTable = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
@@ -93,7 +94,8 @@ const ProductTable = () => {
     toast.success("Thêm sản phẩm thành công!");
   };
 
-  const handleUpdate = (id: string, updated: Partial<IProduct>) => {
+  const handleUpdate = async (id: string, updated: Partial<IProduct>) => {
+    await productApi.update(id, updated);
     setProducts((prev) =>
       prev.map((p) => (p.product_id === id ? { ...p, ...updated } : p))
     );

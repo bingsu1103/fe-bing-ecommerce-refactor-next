@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { paymentApi } from "@/services/api-payment";
 
 export default function CheckoutPage() {
   const { data: session } = useSession();
@@ -30,7 +31,6 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  console.log("ok");
 
   if (!cart || cart.items.length === 0)
     return (
@@ -66,6 +66,8 @@ export default function CheckoutPage() {
 
     try {
       setLoading(true);
+
+      // Tạo đơn hàng trước
       const res = await orderApi.create(
         payload.user_id,
         payload.order_item,
@@ -74,9 +76,30 @@ export default function CheckoutPage() {
         payload.city,
         payload.country
       );
-      toast.success("Đặt hàng thành công");
-      fetchCart(String(session.user.user_id));
-      router.push(`/ordered?order_id=${res.data?.order_id}`);
+
+      const orderId = res.data?.order_id;
+      const paymentId = res.data?.payment?.payment_id;
+
+      if (payment === "cod") {
+        toast.success("Đặt hàng thành công");
+        fetchCart(String(session.user.user_id));
+        router.push(`/ordered?order_id=${orderId}`);
+      } else if (payment === "momo") {
+        const momoRes = await paymentApi.createMomoPayment(total, paymentId!);
+        if (momoRes?.data?.payUrl) {
+          window.location.href = momoRes.data.payUrl;
+        } else {
+          toast.error("Không thể khởi tạo thanh toán MoMo");
+        }
+      } else if (payment === "vnpay") {
+        const vnpayRes = await paymentApi.createVnpayPayment(total, paymentId!);
+        if (vnpayRes?.data?.payUrl) {
+          window.location.href = vnpayRes.data.payUrl;
+        } else {
+          toast.error("Không thể khởi tạo thanh toán VNPAY");
+        }
+        return;
+      }
     } catch (err) {
       console.error(err);
       toast.error("Có lỗi khi đặt hàng! Vui lòng thử lại");
@@ -92,7 +115,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-semibold mb-4">🧾 Thông tin thanh toán</h1>
+      <h1 className="text-2xl font-semibold mb-4">Thông tin thanh toán</h1>
 
       {/* Địa chỉ giao hàng */}
       <Card>
@@ -133,8 +156,12 @@ export default function CheckoutPage() {
               <Label htmlFor="cod">Thanh toán khi nhận hàng (COD)</Label>
             </div>
             <div className="flex items-center space-x-2 mt-2">
-              <RadioGroupItem value="bank" id="bank" />
-              <Label htmlFor="bank">Chuyển khoản ngân hàng</Label>
+              <RadioGroupItem value="momo" id="momo" />
+              <Label htmlFor="momo">Thanh toán qua MoMo</Label>
+            </div>
+            <div className="flex items-center space-x-2 mt-2">
+              <RadioGroupItem value="vnpay" id="vnpay" />
+              <Label htmlFor="vnpay">Thanh toán qua VNPAY</Label>
             </div>
           </RadioGroup>
         </CardContent>
@@ -173,7 +200,7 @@ export default function CheckoutPage() {
             size="lg"
             disabled={loading}
             onClick={handleCheckout}
-            className="bg-primary text-white"
+            className="bg-primary cursor-pointer"
           >
             {loading ? "Đang xử lý..." : "Xác nhận đặt hàng"}
           </Button>

@@ -30,8 +30,8 @@ const OrderTable = () => {
       if (res && res.data) {
         setOrders(res.data.orders);
       }
+      setTotal(Number(res.data?.total));
     };
-    setTotal(40);
     fetchOrders();
   }, [page]);
 

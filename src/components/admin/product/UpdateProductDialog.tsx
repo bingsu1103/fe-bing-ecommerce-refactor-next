@@ -25,13 +25,6 @@ import { Pencil, Save, Trash, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { variantApi } from "@/services/api-variant";
 
-type Variant = {
-  layout: string;
-  color: string;
-  price: number;
-  stock_quantity: number;
-};
-
 interface UpdateProductDialogProps {
   product: IProduct;
   onUpdate: (id: string, data: Partial<IProduct>) => Promise<void> | void;
@@ -52,9 +45,10 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
   const [description, setDescription] = useState("");
 
   // ===== variants =====
-  const initialVariants: Variant[] = useMemo(
+  const initialVariants: IVariant[] = useMemo(
     () =>
       (product.variants || []).map((v) => ({
+        variant_id: v.variant_id ?? "",
         layout: (v as any)?.layout ?? "",
         color: (v as any)?.color ?? "",
         price: Number((v as any)?.price ?? 0),
@@ -62,11 +56,11 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
       })),
     [product.variants]
   );
-  const [variants, setVariants] = useState<Variant[]>(initialVariants);
+  const [variants, setVariants] = useState<IVariant[]>(initialVariants);
 
   // editing one row
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState<Variant>({
+  const [editForm, setEditForm] = useState<IVariant>({
     layout: "",
     color: "",
     price: 0,
@@ -74,7 +68,7 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
   });
 
   // add row form
-  const [addForm, setAddForm] = useState<Variant>({
+  const [addForm, setAddForm] = useState<IVariant>({
     layout: "",
     color: "",
     price: 0,
@@ -105,12 +99,6 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
         name: name.trim(),
         brand: brand.trim(),
         description: description.trim(),
-        variants: variants.map((v) => ({
-          layout: v.layout.trim(),
-          color: v.color.trim(),
-          price: Number(v.price) || 0,
-          stock_quantity: Number(v.stock_quantity) || 0,
-        })) as any,
       });
       toast.success("Cập nhật sản phẩm thành công!");
       setOpen(false);
@@ -131,23 +119,44 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
     setEditForm({ layout: "", color: "", price: 0, stock_quantity: 0 });
   };
 
-  const commitEdit = () => {
+  const commitEdit = async () => {
     if (!editForm.layout.trim() || !editForm.color.trim()) {
       toast.error("Variant cần có layout và color.");
       return;
     }
-    setVariants((prev) =>
-      prev.map((v, i) =>
-        i === editingIndex
-          ? {
-              ...editForm,
-              price: Number(editForm.price) || 0,
-              stock_quantity: Number(editForm.stock_quantity) || 0,
-            }
-          : v
-      )
-    );
-    cancelEdit();
+
+    try {
+      if (!editForm.variant_id) {
+        toast.error("Không tìm thấy ID của variant.");
+        return;
+      }
+
+      await variantApi.update(editForm.variant_id, {
+        layout: editForm.layout.trim(),
+        color: editForm.color.trim(),
+        price: Number(editForm.price) || 0,
+        stock_quantity: Number(editForm.stock_quantity) || 0,
+      });
+
+      setVariants((prev) =>
+        prev.map((v, i) =>
+          i === editingIndex
+            ? {
+                ...v,
+                layout: editForm.layout.trim(),
+                color: editForm.color.trim(),
+                price: Number(editForm.price) || 0,
+                stock_quantity: Number(editForm.stock_quantity) || 0,
+              }
+            : v
+        )
+      );
+
+      toast.success("Đã cập nhật variant thành công!");
+      cancelEdit();
+    } catch {
+      toast.error("Không thể cập nhật variant.");
+    }
   };
 
   const deleteVariant = (index: number) => {
@@ -165,7 +174,7 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
         product.product_id,
         addForm.layout,
         addForm.color,
-        addForm.price,
+        addForm.price as number,
         addForm.stock_quantity
       );
       setVariants((prev) => [

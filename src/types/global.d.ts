@@ -68,7 +68,7 @@ declare global {
   //Module Variant
 
   interface IVariant {
-    variant_id: string;
+    variant_id?: string;
     product?: {
       product_id: string;
     };
@@ -76,8 +76,8 @@ declare global {
     color: string;
     price: string | number;
     stock_quantity: number;
-    created_at: Date;
-    updated_at: Date;
+    created_at?: Date;
+    updated_at?: Date;
   }
 
   //Module Product
@@ -195,5 +195,17 @@ declare global {
   interface IPaymentWithPage {
     payments: IPayment[];
     total: number;
+  }
+
+  interface IMomoCreateResponse {
+    payUrl: string;
+    deeplink: string;
+    qrCodeUrl: string;
+    orderId: string;
+    requestId: string;
+  }
+
+  interface IVnpayCreateResponse {
+    payUrl: string;
   }
 }

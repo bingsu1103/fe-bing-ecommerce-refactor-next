@@ -55,8 +55,8 @@ const PaymentTable = () => {
       if (res && res.data) {
         setPayments(res.data.payments);
       }
+      setTotal(Number(res.data?.total));
     };
-    setTotal(60);
     fetchPayments();
   }, [page]);
 
