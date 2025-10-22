@@ -66,8 +66,6 @@ export default function CheckoutPage() {
 
     try {
       setLoading(true);
-
-      // Tạo đơn hàng trước
       const res = await orderApi.create(
         payload.user_id,
         payload.order_item,

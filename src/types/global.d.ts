@@ -74,6 +74,7 @@ declare global {
     };
     layout: string;
     color: string;
+    image: string;
     price: string | number;
     stock_quantity: number;
     created_at?: Date;

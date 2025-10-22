@@ -25,37 +25,12 @@ const PaymentTable = () => {
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    // const mock: IPayment[] = Array.from({ length: 10 }, (_, i) => ({
-    //   payment_id: `pay-${i + 1}`,
-    //   payment_method: "Credit Card",
-    //   amount: 500000 + i * 20000,
-    //   status: i % 2 ? "Success" : "Pending",
-    //   created_at: new Date(),
-    //   updated_at: new Date(),
-    //   user: {
-    //     user_id: "u1",
-    //     full_name: "John Doe",
-    //     email: "john@example.com",
-    //     phone: null,
-    //     address: null,
-    //     created_at: new Date(),
-    //     updated_at: new Date(),
-    //     deletedAt: null,
-    //   },
-    //   order: {
-    //     order_id: "o1",
-    //     order_status: "Delivered",
-    //     total_price: "500000",
-    //     created_at: new Date(),
-    //     updated_at: new Date(),
-    //   },
-    // }));
     const fetchPayments = async () => {
       const res = await paymentApi.findAll(page, limit);
       if (res && res.data) {
         setPayments(res.data.payments);
+        setTotal(Number(res.data?.total));
       }
-      setTotal(Number(res.data?.total));
     };
     fetchPayments();
   }, [page]);

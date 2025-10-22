@@ -29,8 +29,8 @@ const OrderTable = () => {
       const res = await orderApi.findAll(page, limit);
       if (res && res.data) {
         setOrders(res.data.orders);
+        setTotal(Number(res.data?.total));
       }
-      setTotal(Number(res.data?.total));
     };
     fetchOrders();
   }, [page]);

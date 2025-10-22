@@ -52,7 +52,7 @@ const CategoryTable = () => {
       const res = await categoryApi.findAll(page, limit);
       if (res && res.data) {
         setCategories(res.data.categories);
-        setTotal(res.data.total || 30);
+        setTotal(res.data.total);
       }
     };
     fetchCategories();

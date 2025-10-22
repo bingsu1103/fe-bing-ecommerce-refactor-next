@@ -24,7 +24,6 @@ async function refreshAccessToken(token: any) {
   }
 }
 
-// ✅ Tạo và export authOptions
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({

@@ -21,6 +21,11 @@ export default class OrderApi {
     });
   }
 
+  async findOne(order_id: string) {
+    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/${order_id}`;
+    return await axios.get<IBackendRes<IOrder>>(backendUrl);
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async update(id: string, data: any) {
     const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/${id}`;
@@ -29,6 +34,11 @@ export default class OrderApi {
 
   async findAll(page?: number, limit?: number) {
     const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/orders?page=${page}&limit=${limit}`;
+    return await axios.get<IBackendRes<IOrderWithPage>>(backendUrl);
+  }
+
+  async findByUserId(id: string, page?: number, limit?: number) {
+    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/user/${id}?page=${page}&limit=${limit}`;
     return await axios.get<IBackendRes<IOrderWithPage>>(backendUrl);
   }
 }
