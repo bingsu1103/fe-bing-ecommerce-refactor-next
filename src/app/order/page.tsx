@@ -17,8 +17,9 @@ interface SearchParams {
 
 const Order = async ({ searchParams }: SearchParams) => {
   const session = await getServerSession(authOptions);
-  const page = Number(searchParams?.page) || 1;
-  const limit = Number(searchParams?.limit) || 4;
+  const params = await searchParams;
+  const page = Number(params?.page) || 1;
+  const limit = Number(params?.limit) || 4;
 
   const orderUser = await orderApi.findByUserId(
     String(session?.user.user_id),
