@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -21,9 +20,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Save, Trash, Plus } from "lucide-react";
+import { Pencil, Save, Trash, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { variantApi } from "@/services/api-variant";
+import { uploadApi } from "@/services/api-upload";
 
 interface UpdateProductDialogProps {
   product: IProduct;
@@ -39,12 +39,10 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // ===== product fields =====
   const [name, setName] = useState("");
   const [brand, setBrand] = useState("");
   const [description, setDescription] = useState("");
 
-  // ===== variants =====
   const initialVariants: IVariant[] = useMemo(
     () =>
       (product.variants || []).map((v) => ({
@@ -53,26 +51,26 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
         color: (v as any)?.color ?? "",
         price: Number((v as any)?.price ?? 0),
         stock_quantity: Number((v as any)?.stock_quantity ?? 0),
+        image: (v as any)?.image ?? null,
       })),
     [product.variants]
   );
-  const [variants, setVariants] = useState<IVariant[]>(initialVariants);
 
-  // editing one row
+  const [variants, setVariants] = useState<IVariant[]>(initialVariants);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<IVariant>({
     layout: "",
     color: "",
     price: 0,
     stock_quantity: 0,
+    image: null,
   });
-
-  // add row form
   const [addForm, setAddForm] = useState<IVariant>({
     layout: "",
     color: "",
     price: 0,
     stock_quantity: 0,
+    image: null,
   });
 
   useEffect(() => {
@@ -82,12 +80,23 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
       setDescription(product.description ?? "");
       setVariants(initialVariants);
       setEditingIndex(null);
-      setEditForm({ layout: "", color: "", price: 0, stock_quantity: 0 });
-      setAddForm({ layout: "", color: "", price: 0, stock_quantity: 0 });
+      setEditForm({
+        layout: "",
+        color: "",
+        price: 0,
+        stock_quantity: 0,
+        image: null,
+      });
+      setAddForm({
+        layout: "",
+        color: "",
+        price: 0,
+        stock_quantity: 0,
+        image: null,
+      });
     }
   }, [open, product, initialVariants]);
 
-  // ===== handlers =====
   const handleSaveProduct = async () => {
     if (!name.trim() || !brand.trim()) {
       toast.error("Vui lòng nhập Tên sản phẩm và Thương hiệu.");
@@ -116,7 +125,24 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
 
   const cancelEdit = () => {
     setEditingIndex(null);
-    setEditForm({ layout: "", color: "", price: 0, stock_quantity: 0 });
+    setEditForm({
+      layout: "",
+      color: "",
+      price: 0,
+      stock_quantity: 0,
+      image: null,
+    });
+  };
+
+  const handleUploadImage = (variantId: string, file: File) => {
+    if (!file) return;
+    setVariants((prev) =>
+      prev.map((v) => (v.variant_id === variantId ? { ...v, image: file } : v))
+    );
+    if (editingIndex !== null) {
+      setEditForm((prev) => ({ ...prev, image: file }));
+    }
+    toast.info("Ảnh đã được chọn, nhấn Lưu để cập nhật.");
   };
 
   const commitEdit = async () => {
@@ -131,31 +157,38 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
         return;
       }
 
+      setSaving(true);
+
+      let imageUrl: string | null = null;
+
+      if (editForm.image && editForm.image instanceof File) {
+        const uploadRes = await uploadApi.upload(editForm.image);
+        imageUrl = uploadRes.data?.url;
+      } else if (typeof editForm.image === "string") {
+        imageUrl = editForm.image;
+      }
+
       await variantApi.update(editForm.variant_id, {
         layout: editForm.layout.trim(),
         color: editForm.color.trim(),
         price: Number(editForm.price) || 0,
         stock_quantity: Number(editForm.stock_quantity) || 0,
+        image: imageUrl,
       });
 
       setVariants((prev) =>
         prev.map((v, i) =>
-          i === editingIndex
-            ? {
-                ...v,
-                layout: editForm.layout.trim(),
-                color: editForm.color.trim(),
-                price: Number(editForm.price) || 0,
-                stock_quantity: Number(editForm.stock_quantity) || 0,
-              }
-            : v
+          i === editingIndex ? { ...editForm, image: imageUrl } : v
         )
       );
 
-      toast.success("Đã cập nhật variant thành công!");
+      toast.success("Đã lưu variant thành công!");
       cancelEdit();
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Không thể cập nhật variant.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -168,7 +201,6 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
       toast.error("Vui lòng nhập layout và color cho variant.");
       return;
     }
-    // Gọi API tạo variant nếu cần
     try {
       await variantApi.create(
         product.product_id,
@@ -177,16 +209,14 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
         addForm.price as number,
         addForm.stock_quantity
       );
-      setVariants((prev) => [
-        ...prev,
-        {
-          layout: addForm.layout.trim(),
-          color: addForm.color.trim(),
-          price: Number(addForm.price) || 0,
-          stock_quantity: Number(addForm.stock_quantity) || 0,
-        },
-      ]);
-      setAddForm({ layout: "", color: "", price: 0, stock_quantity: 0 });
+      setVariants((prev) => [...prev, { ...addForm }]);
+      setAddForm({
+        layout: "",
+        color: "",
+        price: 0,
+        stock_quantity: 0,
+        image: null,
+      });
       toast.success("Đã thêm variant.");
     } catch {
       toast.error("Không thể thêm variant.");
@@ -210,7 +240,6 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
           <DialogTitle>Chỉnh sửa sản phẩm</DialogTitle>
         </DialogHeader>
 
-        {/* ===== Product basic fields ===== */}
         <div className="grid gap-3 py-2">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Input
@@ -234,7 +263,6 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
           </div>
         </div>
 
-        {/* ===== Variants table ===== */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h4 className="font-medium">Variants</h4>
@@ -248,17 +276,19 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[15%]">Image</TableHead>
                 <TableHead className="w-[20%]">Layout</TableHead>
                 <TableHead className="w-[20%]">Color</TableHead>
-                <TableHead className="w-[20%]">Price (₫)</TableHead>
-                <TableHead className="w-[20%]">Stock</TableHead>
-                <TableHead className="w-[20%] text-right">Actions</TableHead>
+                <TableHead className="w-[15%]">Price (₫)</TableHead>
+                <TableHead className="w-[15%]">Stock</TableHead>
+                <TableHead className="w-[15%] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {variants.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-sm py-6">
+                  <TableCell colSpan={6} className="text-center text-sm py-6">
                     Chưa có variant nào
                   </TableCell>
                 </TableRow>
@@ -266,6 +296,40 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
                 variants.map((v, i) =>
                   editingIndex === i ? (
                     <TableRow key={`editing-${i}`}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {editForm.image ? (
+                            <img
+                              src={
+                                typeof editForm.image === "string"
+                                  ? editForm.image
+                                  : URL.createObjectURL(editForm.image)
+                              }
+                              alt="variant"
+                              className="w-12 h-12 rounded object-cover border"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gray-100 border rounded flex items-center justify-center text-xs text-gray-400">
+                              No image
+                            </div>
+                          )}
+                          <label className="cursor-pointer">
+                            <Upload className="h-4 w-4" />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) =>
+                                e.target.files?.[0] &&
+                                handleUploadImage(
+                                  editForm.variant_id!,
+                                  e.target.files[0]
+                                )
+                              }
+                            />
+                          </label>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Input
                           value={editForm.layout}
@@ -330,6 +394,30 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
                     </TableRow>
                   ) : (
                     <TableRow key={i}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {v.image ? (
+                            <img
+                              src={
+                                typeof v.image === "string"
+                                  ? v.image
+                                  : URL.createObjectURL(v.image)
+                              }
+                              alt="variant"
+                              className="w-12 h-12 rounded object-cover border"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gray-100 border rounded flex items-center justify-center text-xs text-gray-400">
+                              No image
+                            </div>
+                          )}
+                          {v.image instanceof File && (
+                            <Badge variant="outline" className="text-amber-500">
+                              Chưa lưu
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>{v.layout}</TableCell>
                       <TableCell className="capitalize">{v.color}</TableCell>
                       <TableCell>
@@ -357,11 +445,11 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
                 )
               )}
 
-              {/* Add row */}
               <TableRow>
+                <TableCell>–</TableCell>
                 <TableCell>
                   <Input
-                    placeholder="Layout (VD: ANSI)"
+                    placeholder="Layout"
                     value={addForm.layout}
                     onChange={(e) =>
                       setAddForm((s) => ({ ...s, layout: e.target.value }))
@@ -370,7 +458,7 @@ const UpdateProductDialog: React.FC<UpdateProductDialogProps> = ({
                 </TableCell>
                 <TableCell>
                   <Input
-                    placeholder="Color (VD: black)"
+                    placeholder="Color"
                     value={addForm.color}
                     onChange={(e) =>
                       setAddForm((s) => ({ ...s, color: e.target.value }))

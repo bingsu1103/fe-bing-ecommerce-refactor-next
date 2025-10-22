@@ -102,14 +102,14 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
     >
       <div className="grid md:grid-cols-2 gap-10">
         <div className="flex justify-center items-center">
-          {/* <img
+          <img
             src={
-              (selectedVariant as any)?.image_url ||
+              selectedVariant?.image ||
               "https://placehold.co/500x400?text=No+Image"
             }
             alt={product.name}
             className="rounded-2xl shadow-md object-contain w-full max-h-[400px]"
-          /> */}
+          />
         </div>
 
         <div>

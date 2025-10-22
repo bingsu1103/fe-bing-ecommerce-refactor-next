@@ -74,7 +74,7 @@ declare global {
     };
     layout: string;
     color: string;
-    image: string;
+    image: string | null;
     price: string | number;
     stock_quantity: number;
     created_at?: Date;
@@ -208,5 +208,11 @@ declare global {
 
   interface IVnpayCreateResponse {
     payUrl: string;
+  }
+
+  interface IUpload {
+    url: string;
+    public_id: string;
+    resource_type: string;
   }
 }
